@@ -65,6 +65,7 @@ WUMS_APPLICATION_STARTS() {
 }
 
 WUMS_APPLICATION_ENDS() {
+    gDrawReady = false;
     if (gOverlayFrame) {
         gOverlayFrame->clearElements();
     }
