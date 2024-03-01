@@ -40,20 +40,20 @@ WUMS_INITIALIZE() {
     if (gContextState == nullptr) {
         OSFatal("NotificationModule: Failed to allocate gContextState");
     } else {
-        DEBUG_FUNCTION_LINE("Allocated %d bytes for gCont extState", sizeof(GX2ContextState));
+        DEBUG_FUNCTION_LINE_VERBOSE("Allocated %d bytes for gContextState", sizeof(GX2ContextState));
     }
 
     void *font    = nullptr;
     uint32_t size = 0;
-    OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, &font, &size);
-    if (font && size) {
+    if (OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0, &font, &size) && font && size > 0) {
         gFontSystem = new (std::nothrow) SchriftGX2((uint8_t *) font, (int32_t) size);
-        if (gFontSystem) {
-            GuiText::setPresetFont(gFontSystem);
-        } else {
-            DEBUG_FUNCTION_LINE_ERR("Failed to init font system");
-        }
     }
+    if (gFontSystem != nullptr) {
+        GuiText::setPresetFont(gFontSystem);
+    } else {
+        OSFatal("NotificationModule: Failed to init font system");
+    }
+
     OSMemoryBarrier();
     deinitLogging();
 }
