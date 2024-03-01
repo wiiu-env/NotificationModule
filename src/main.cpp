@@ -20,7 +20,7 @@ WUMS_INITIALIZE() {
     initLogging();
 
     if (FunctionPatcher_InitLibrary() != FUNCTION_PATCHER_RESULT_SUCCESS) {
-        OSFatal("homebrew_notifications: FunctionPatcher_InitLibrary failed");
+        OSFatal("NotificationModule: FunctionPatcher_InitLibrary failed");
     }
     DEBUG_FUNCTION_LINE("Patch NotificationModule functions");
     for (uint32_t i = 0; i < function_replacements_size; i++) {
@@ -38,7 +38,7 @@ WUMS_INITIALIZE() {
             sizeof(GX2ContextState),
             GX2_CONTEXT_STATE_ALIGNMENT);
     if (gContextState == nullptr) {
-        OSFatal("Failed to allocate gContextState");
+        OSFatal("NotificationModule: Failed to allocate gContextState");
     } else {
         DEBUG_FUNCTION_LINE("Allocated %d bytes for gCont extState", sizeof(GX2ContextState));
     }
