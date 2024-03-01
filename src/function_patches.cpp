@@ -114,7 +114,7 @@ DECL_FUNCTION(void, GX2Init, uint32_t attributes) {
         DEBUG_FUNCTION_LINE_VERBOSE("Init Overlay");
         gOverlayFrame = new (std::nothrow) OverlayFrame(1280.0f, 720.0f);
         if (!gOverlayFrame) {
-            OSFatal("Failed to alloc gOverlayFrame");
+            OSFatal("NotificationModule: Failed to alloc gOverlayFrame");
         }
 
         // Add notification that had been called before the overlay was ready
@@ -124,12 +124,16 @@ DECL_FUNCTION(void, GX2Init, uint32_t attributes) {
         gOverlayQueueDuringStartup.clear();
 
         // Allocate shader.
-        ColorShader::instance();
-        Texture2DShader::instance();
+        if (ColorShader::instance() == nullptr) {
+            OSFatal("NotificationModule: Failed to alloc ColorShader");
+        }
+        if (Texture2DShader::instance() == nullptr) {
+            OSFatal("NotificationModule: Failed to alloc Texture2DShader");
+        }
 
         // has been allocated in WUMS INIT
         if (!gContextState) {
-            OSFatal("Failed to alloc gContextState");
+            OSFatal("NotificationModule: Failed to alloc gContextState");
         }
         real_GX2SetupContextStateEx(gContextState, GX2_TRUE);
         DCInvalidateRange(gContextState, sizeof(GX2ContextState)); // Important!
