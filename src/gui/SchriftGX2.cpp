@@ -217,6 +217,7 @@ ftgxCharData *SchriftGX2::cacheGlyphData(wchar_t charCode, int16_t pixelSize) {
         textureHeight = mtx.minHeight;
 
         SFT_Image img = {
+                .pixels = nullptr,
                 .width  = textureWidth,
                 .height = textureHeight,
         };
@@ -307,7 +308,7 @@ bool SchriftGX2::loadGlyphData(SFT_Image *bmp, ftgxCharData *charData, ftGX2Data
 
     auto *src = (uint8_t *) bmp->pixels;
     auto *dst = (uint32_t *) charData->texture->surface.image;
-    uint32_t x, y;
+    int32_t x, y;
 
     for (y = 0; y < bmp->height; y++) {
         for (x = 0; x < bmp->width; x++) {
@@ -391,6 +392,7 @@ int16_t SchriftGX2::getStyleOffsetHeight(int16_t format, uint16_t pixelSize) {
 */
 
 uint16_t SchriftGX2::drawText(int16_t x, int16_t y, int16_t z, const wchar_t *text, int16_t pixelSize, const glm::vec4 &color, uint16_t textStyle, uint16_t textWidth, const float &textBlur, const float &colorBlurIntensity, const glm::vec4 &blurColor) {
+    (void) textWidth;
     if (!text) {
         return 0;
     }
