@@ -76,3 +76,9 @@ WUMS_APPLICATION_ENDS() {
     Texture2DShader::destroyInstance();
     deinitLogging();
 }
+
+WUMS_DEINITIALIZE() {
+    delete gOverlayFrame;
+    delete gFontSystem;
+    MEMFreeToMappedMemory(gContextState);
+}
