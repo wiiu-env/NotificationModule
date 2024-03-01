@@ -110,11 +110,18 @@ bool drawScreenshotSavedTexture(const GX2ColorBuffer *colorBuffer, GX2ScanTarget
 DECL_FUNCTION(void, GX2Init, uint32_t attributes) {
     real_GX2Init(attributes);
     if (!gOverlayInitDone) {
+        std::lock_guard overlay_lock(gOverlayFrameMutex);
         DEBUG_FUNCTION_LINE_VERBOSE("Init Overlay");
         gOverlayFrame = new (std::nothrow) OverlayFrame(1280.0f, 720.0f);
         if (!gOverlayFrame) {
             OSFatal("Failed to alloc gOverlayFrame");
         }
+
+        // Add notification that had been called before the overlay was ready
+        for (const auto &notification : gOverlayQueueDuringStartup) {
+            gOverlayFrame->addNotification(notification);
+        }
+        gOverlayQueueDuringStartup.clear();
 
         // Allocate shader.
         ColorShader::instance();

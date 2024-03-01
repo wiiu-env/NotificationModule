@@ -8,6 +8,8 @@
 void ExportCleanUp() {
     std::lock_guard<std::mutex> lock(gNotificationListMutex);
     gNotificationList.clear();
+    std::lock_guard overlay_lock(gOverlayFrameMutex);
+    gOverlayQueueDuringStartup.clear();
 }
 
 NotificationModuleStatus NMAddStaticNotification(const char *text,
@@ -18,9 +20,6 @@ NotificationModuleStatus NMAddStaticNotification(const char *text,
                                                  NMColor backgroundColor,
                                                  void (*finishFunc)(NotificationModuleHandle, void *context),
                                                  void *context) {
-    if (!gOverlayFrame) {
-        return NOTIFICATION_MODULE_RESULT_OVERLAY_NOT_READY;
-    }
 
     NotificationStatus status;
     switch (type) {
@@ -46,7 +45,14 @@ NotificationModuleStatus NMAddStaticNotification(const char *text,
         return NOTIFICATION_MODULE_RESULT_ALLOCATION_FAILED;
     }
 
-    gOverlayFrame->addNotification(notification);
+    {
+        std::lock_guard lock(gOverlayFrameMutex);
+        if (gOverlayFrame) {
+            gOverlayFrame->addNotification(std::move(notification));
+        } else {
+            gOverlayQueueDuringStartup.push_back(std::move(notification));
+        }
+    }
 
     return NOTIFICATION_MODULE_RESULT_SUCCESS;
 }
@@ -70,9 +76,6 @@ NotificationModuleStatus NMAddDynamicNotification(const char *text,
         return NOTIFICATION_MODULE_RESULT_INVALID_ARGUMENT;
     }
     *outHandle = 0;
-    if (!gOverlayFrame) {
-        return NOTIFICATION_MODULE_RESULT_OVERLAY_NOT_READY;
-    }
 
     auto notification = make_shared_nothrow<Notification>(
             text,
@@ -91,8 +94,15 @@ NotificationModuleStatus NMAddDynamicNotification(const char *text,
     {
         std::lock_guard<std::mutex> lock(gNotificationListMutex);
         *outHandle = notification->getHandle();
-        gOverlayFrame->addNotification(notification);
-        gNotificationList.push_front(notification);
+        {
+            std::lock_guard overlay_lock(gOverlayFrameMutex);
+            if (gOverlayFrame) {
+                gOverlayFrame->addNotification(notification);
+            } else {
+                gOverlayQueueDuringStartup.push_back(notification);
+            }
+        }
+        gNotificationList.push_front(std::move(notification));
     }
 
     return NOTIFICATION_MODULE_RESULT_SUCCESS;
