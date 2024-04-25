@@ -11,7 +11,7 @@
 
 WUMS_MODULE_EXPORT_NAME("homebrew_notifications");
 
-#define VERSION "v0.1.1"
+#define VERSION "v0.1.2"
 
 WUMS_DEPENDS_ON(homebrew_memorymapping);
 WUMS_DEPENDS_ON(homebrew_functionpatcher);
