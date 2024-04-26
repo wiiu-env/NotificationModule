@@ -8,7 +8,8 @@ Notification::Notification(const std::string &overlayText,
                            GX2Color backgroundColor,
                            void (*finishFunc)(NotificationModuleHandle, void *),
                            void *context,
-                           void (*removedFromOverlayCallback)(Notification *)) : GuiFrame(0, 0), mBackground(0, 0, backgroundColor) {
+                           void (*removedFromOverlayCallback)(Notification *),
+                           bool keepUntilShown) : GuiFrame(0, 0), mBackground(0, 0, backgroundColor) {
     mFinishFunction              = finishFunc;
     mFinishFunctionContext       = context;
     mRemovedFromOverlayCallback  = removedFromOverlayCallback;
@@ -20,6 +21,7 @@ Notification::Notification(const std::string &overlayText,
     mNotificationText.setPosition(0, 0);
     mNotificationText.setFontSize(20);
     mNotificationText.setAlignment(ALIGN_CENTERED);
+    mKeepUntilShown = keepUntilShown;
 
     updateStatus(status);
 
