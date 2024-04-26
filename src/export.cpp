@@ -9,17 +9,28 @@ void ExportCleanUp() {
     std::lock_guard<std::mutex> lock(gNotificationListMutex);
     gNotificationList.clear();
     std::lock_guard overlay_lock(gOverlayFrameMutex);
+
+    // Remove notification in queue that should not survive
+    std::vector<std::shared_ptr<Notification>> keepQueue;
+    for (const auto &notification : gOverlayQueueDuringStartup) {
+        if (notification->isKeepUntilShown()) {
+            keepQueue.push_back(notification);
+        } else {
+        }
+    }
     gOverlayQueueDuringStartup.clear();
+    gOverlayQueueDuringStartup = keepQueue;
 }
 
-NotificationModuleStatus NMAddStaticNotification(const char *text,
-                                                 NotificationModuleNotificationType type,
-                                                 float durationBeforeFadeOutInSeconds,
-                                                 float shakeDurationInSeconds,
-                                                 NMColor textColor,
-                                                 NMColor backgroundColor,
-                                                 void (*finishFunc)(NotificationModuleHandle, void *context),
-                                                 void *context) {
+NotificationModuleStatus NMAddStaticNotificationV2(const char *text,
+                                                   NotificationModuleNotificationType type,
+                                                   float durationBeforeFadeOutInSeconds,
+                                                   float shakeDurationInSeconds,
+                                                   NMColor textColor,
+                                                   NMColor backgroundColor,
+                                                   void (*finishFunc)(NotificationModuleHandle, void *context),
+                                                   void *context,
+                                                   bool keepUntilShown) {
 
     NotificationStatus status;
     switch (type) {
@@ -40,14 +51,16 @@ NotificationModuleStatus NMAddStaticNotification(const char *text,
             (GX2Color){textColor.r, textColor.g, textColor.b, textColor.a},
             (GX2Color){backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a},
             finishFunc,
-            context);
+            context,
+            nullptr,
+            keepUntilShown);
     if (!notification) {
         return NOTIFICATION_MODULE_RESULT_ALLOCATION_FAILED;
     }
 
     {
         std::lock_guard lock(gOverlayFrameMutex);
-        if (gOverlayFrame) {
+        if (gOverlayFrame && gDrawReady) {
             gOverlayFrame->addNotification(std::move(notification));
         } else {
             gOverlayQueueDuringStartup.push_back(std::move(notification));
@@ -55,6 +68,18 @@ NotificationModuleStatus NMAddStaticNotification(const char *text,
     }
 
     return NOTIFICATION_MODULE_RESULT_SUCCESS;
+}
+
+
+NotificationModuleStatus NMAddStaticNotification(const char *text,
+                                                 NotificationModuleNotificationType type,
+                                                 float durationBeforeFadeOutInSeconds,
+                                                 float shakeDurationInSeconds,
+                                                 NMColor textColor,
+                                                 NMColor backgroundColor,
+                                                 void (*finishFunc)(NotificationModuleHandle, void *context),
+                                                 void *context) {
+    return NMAddStaticNotificationV2(text, type, durationBeforeFadeOutInSeconds, shakeDurationInSeconds, textColor, backgroundColor, finishFunc, context, false);
 }
 
 void NMNotificationRemovedFromOverlay(Notification *notification) {
@@ -66,12 +91,13 @@ void NMNotificationRemovedFromOverlay(Notification *notification) {
     }
 }
 
-NotificationModuleStatus NMAddDynamicNotification(const char *text,
-                                                  NMColor textColor,
-                                                  NMColor backgroundColor,
-                                                  void (*finishFunc)(NotificationModuleHandle, void *context),
-                                                  void *context,
-                                                  NotificationModuleHandle *outHandle) {
+NotificationModuleStatus NMAddDynamicNotificationV2(const char *text,
+                                                    NMColor textColor,
+                                                    NMColor backgroundColor,
+                                                    void (*finishFunc)(NotificationModuleHandle, void *context),
+                                                    void *context,
+                                                    bool keep_until_shown,
+                                                    NotificationModuleHandle *outHandle) {
     if (outHandle == nullptr) {
         return NOTIFICATION_MODULE_RESULT_INVALID_ARGUMENT;
     }
@@ -86,7 +112,8 @@ NotificationModuleStatus NMAddDynamicNotification(const char *text,
             (GX2Color){backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a},
             finishFunc,
             context,
-            NMNotificationRemovedFromOverlay);
+            NMNotificationRemovedFromOverlay,
+            keep_until_shown);
     if (!notification) {
         return NOTIFICATION_MODULE_RESULT_ALLOCATION_FAILED;
     }
@@ -106,6 +133,15 @@ NotificationModuleStatus NMAddDynamicNotification(const char *text,
     }
 
     return NOTIFICATION_MODULE_RESULT_SUCCESS;
+}
+
+NotificationModuleStatus NMAddDynamicNotification(const char *text,
+                                                  NMColor textColor,
+                                                  NMColor backgroundColor,
+                                                  void (*finishFunc)(NotificationModuleHandle, void *context),
+                                                  void *context,
+                                                  NotificationModuleHandle *outHandle) {
+    return NMAddDynamicNotificationV2(text, textColor, backgroundColor, finishFunc, context, false, outHandle);
 }
 
 NotificationModuleStatus NMUpdateDynamicNotificationText(NotificationModuleHandle handle,
@@ -196,10 +232,12 @@ NotificationModuleStatus NMGetVersion(NotificationModuleAPIVersion *outVersion) 
     if (outVersion == nullptr) {
         return NOTIFICATION_MODULE_RESULT_INVALID_ARGUMENT;
     }
-    *outVersion = 1;
+    *outVersion = 2;
     return NOTIFICATION_MODULE_RESULT_SUCCESS;
 }
 
+WUMS_EXPORT_FUNCTION(NMAddDynamicNotificationV2);
+WUMS_EXPORT_FUNCTION(NMAddStaticNotificationV2);
 WUMS_EXPORT_FUNCTION(NMAddDynamicNotification);
 WUMS_EXPORT_FUNCTION(NMAddStaticNotification);
 WUMS_EXPORT_FUNCTION(NMUpdateDynamicNotificationText);

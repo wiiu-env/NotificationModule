@@ -35,7 +35,8 @@ public:
                           GX2Color backgroundColor                             = {100, 100, 100, 255},
                           void (*finishFunc)(NotificationModuleHandle, void *) = nullptr,
                           void *context                                        = nullptr,
-                          void (*removedFromOverlayCallback)(Notification *)   = nullptr);
+                          void (*removedFromOverlayCallback)(Notification *)   = nullptr,
+                          bool keepUntilShown                                  = false);
 
     ~Notification() override;
 
@@ -90,6 +91,10 @@ public:
         mPositionSet = true;
     }
 
+    [[nodiscard]] bool isKeepUntilShown() const {
+        return mKeepUntilShown;
+    }
+
 private:
     std::function<void(NotificationModuleHandle, void *)> mFinishFunction;
     std::function<void(Notification *)> mRemovedFromOverlayCallback;
@@ -105,6 +110,8 @@ private:
 
     bool mTextDirty   = false;
     bool mPositionSet = false;
+
+    bool mKeepUntilShown = false;
 
     NotificationStatus mStatus                 = NOTIFICATION_STATUS_INFO;
     NotificationInternalStatus mInternalStatus = NOTIFICATION_STATUS_NOTHING;

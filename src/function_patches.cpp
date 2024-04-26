@@ -71,8 +71,18 @@ void drawScreenshotSavedTexture2(GX2ColorBuffer *colorBuffer, GX2ScanTarget scan
     drawIntoColorBuffer(colorBuffer, gOverlayFrame, scan_target);
 }
 
+static void TryAddFromQueue() {
+    std::lock_guard overlay_lock(gOverlayFrameMutex);
+    // Add notification that had been called before the overlay was ready
+    for (const auto &notification : gOverlayQueueDuringStartup) {
+        gOverlayFrame->addNotification(notification);
+    }
+    gOverlayQueueDuringStartup.clear();
+}
+
 DECL_FUNCTION(void, GX2CopyColorBufferToScanBuffer, const GX2ColorBuffer *colorBuffer, GX2ScanTarget scan_target) {
     gDrawReady = true;
+    TryAddFromQueue();
     if (drawScreenshotSavedTexture(colorBuffer, scan_target)) {
         // if it returns true we don't need to call GX2CopyColorBufferToScanBuffer
         return;
@@ -117,12 +127,6 @@ DECL_FUNCTION(void, GX2Init, uint32_t attributes) {
             OSFatal("NotificationModule: Failed to alloc gOverlayFrame");
         }
 
-        // Add notification that had been called before the overlay was ready
-        for (const auto &notification : gOverlayQueueDuringStartup) {
-            gOverlayFrame->addNotification(notification);
-        }
-        gOverlayQueueDuringStartup.clear();
-
         // Allocate shader.
         if (ColorShader::instance() == nullptr) {
             OSFatal("NotificationModule: Failed to alloc ColorShader");
@@ -143,6 +147,7 @@ DECL_FUNCTION(void, GX2Init, uint32_t attributes) {
 
 DECL_FUNCTION(void, GX2MarkScanBufferCopied, GX2ScanTarget scan_target) {
     gDrawReady = true;
+    TryAddFromQueue();
     if (scan_target == GX2_SCAN_TARGET_TV) {
         drawScreenshotSavedTexture2(&lastTVColorBuffer, scan_target);
     } else {
