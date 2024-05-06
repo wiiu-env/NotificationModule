@@ -72,6 +72,9 @@ void drawScreenshotSavedTexture2(GX2ColorBuffer *colorBuffer, GX2ScanTarget scan
 }
 
 static void TryAddFromQueue() {
+    if (!gOverlayFrame) {
+        return;
+    }
     std::lock_guard overlay_lock(gOverlayFrameMutex);
     // Add notification that had been called before the overlay was ready
     for (const auto &notification : gOverlayQueueDuringStartup) {
