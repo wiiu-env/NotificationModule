@@ -1,4 +1,4 @@
-[![CI-Release](https://github.com/wiiu-env/NotificationModule/actions/workflows/ci.yml/badge.svg)](https://github.com/wiiu-env/NotificationModule/actions/workflows/ci.yml)
+[![CI release](https://github.com/wiiu-env/NotificationModule/actions/workflows/ci.yml/badge.svg)](https://github.com/wiiu-env/NotificationModule/actions/workflows/ci.yml)
 
 See [libnotifications](https://github.com/wiiu-env/libnotifications).
 
@@ -8,7 +8,7 @@ See [libnotifications](https://github.com/wiiu-env/libnotifications).
 1. Copy the file `NotificationModule.wms` into `sd:/wiiu/environments/[ENVIRONMENT]/modules`.  
 2. Requires the [WUMSLoader](https://github.com/wiiu-env/WUMSLoader) in `sd:/wiiu/environments/[ENVIRONMENT]/modules/setup`.
 
-## Buildflags
+## Build flags
 
 ### Logging
 Building via `make` only logs errors (via OSReport). To enable logging via the [LoggingModule](https://github.com/wiiu-env/LoggingModule) set `DEBUG` to `1` or `VERBOSE`.
@@ -34,6 +34,6 @@ docker run -it --rm -v ${PWD}:/project notificationmodule-builder make
 docker run -it --rm -v ${PWD}:/project notificationmodule-builder make clean
 ```
 
-## Format the code via docker
+## Format the code via Docker
 
 `docker run --rm -v ${PWD}:/src ghcr.io/wiiu-env/clang-format:13.0.0-2 -r ./src -i`
