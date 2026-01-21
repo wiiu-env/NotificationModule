@@ -17,8 +17,8 @@ std::shared_ptr<T> make_shared_nothrow(Args &&...args) noexcept(noexcept(T(std::
 }
 
 template<typename T, class Allocator, class Predicate>
-bool remove_locked_first_if(std::mutex &mutex, std::forward_list<T, Allocator> &list, Predicate pred) {
-    std::lock_guard<std::mutex> lock(mutex);
+bool remove_locked_first_if(std::recursive_mutex &mutex, std::forward_list<T, Allocator> &list, Predicate pred) {
+    std::lock_guard<std::recursive_mutex> lock(mutex);
     auto oit = list.before_begin(), it = std::next(oit);
     while (it != list.end()) {
         if (pred(*it)) {
@@ -45,5 +45,5 @@ inline uint8_t RGBComponentToSRGB(uint8_t ci) {
     return RGBComponentToSRGBTable[ci];
 }
 
-extern std::mutex gNotificationListMutex;
+extern std::recursive_mutex gNotificationListMutex;
 extern std::forward_list<std::shared_ptr<Notification>> gNotificationList;

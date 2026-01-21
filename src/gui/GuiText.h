@@ -100,5 +100,5 @@ protected:
     float blurAlpha;
     glm::vec4 blurGlowColor{};
 
-    std::mutex mTextLock;
+    std::recursive_mutex mTextLock;
 };

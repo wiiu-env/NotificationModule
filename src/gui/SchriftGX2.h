@@ -131,7 +131,7 @@ private:
 
     void copyTextureToFramebuffer(GX2Texture *tex, int16_t screenX, int16_t screenY, int16_t screenZ, const glm::vec4 &color, const float &textBlur, const float &colorBlurIntensity, const glm::vec4 &blurColor);
 
-    std::mutex fontDataMutex;
+    std::recursive_mutex fontDataMutex;
 
 public:
     SchriftGX2(const uint8_t *fontBuffer, uint32_t bufferSize);

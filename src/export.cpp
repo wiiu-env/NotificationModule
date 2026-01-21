@@ -6,7 +6,7 @@
 #include <wums.h>
 
 void ExportCleanUp() {
-    std::lock_guard<std::mutex> lock(gNotificationListMutex);
+    std::lock_guard<std::recursive_mutex> lock(gNotificationListMutex);
     gNotificationList.clear();
     std::lock_guard overlay_lock(gOverlayFrameMutex);
 
@@ -119,7 +119,7 @@ NotificationModuleStatus NMAddDynamicNotificationV2(const char *text,
     }
 
     {
-        std::lock_guard<std::mutex> lock(gNotificationListMutex);
+        std::lock_guard<std::recursive_mutex> lock(gNotificationListMutex);
         *outHandle = notification->getHandle();
         {
             std::lock_guard overlay_lock(gOverlayFrameMutex);
@@ -147,7 +147,7 @@ NotificationModuleStatus NMAddDynamicNotification(const char *text,
 NotificationModuleStatus NMUpdateDynamicNotificationText(NotificationModuleHandle handle,
                                                          const char *text) {
     NotificationModuleStatus res = NOTIFICATION_MODULE_RESULT_INVALID_HANDLE;
-    std::lock_guard<std::mutex> lock(gNotificationListMutex);
+    std::lock_guard<std::recursive_mutex> lock(gNotificationListMutex);
     for (auto &cur : gNotificationList) {
         if (cur->getHandle() == handle) {
             cur->updateText(text);
@@ -161,7 +161,7 @@ NotificationModuleStatus NMUpdateDynamicNotificationText(NotificationModuleHandl
 NotificationModuleStatus NMUpdateDynamicNotificationBackgroundColor(NotificationModuleHandle handle,
                                                                     NMColor backgroundColor) {
     NotificationModuleStatus res = NOTIFICATION_MODULE_RESULT_INVALID_HANDLE;
-    std::lock_guard<std::mutex> lock(gNotificationListMutex);
+    std::lock_guard<std::recursive_mutex> lock(gNotificationListMutex);
     for (auto &cur : gNotificationList) {
         if (cur->getHandle() == handle) {
             cur->updateBackgroundColor((GX2Color){backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a});
@@ -175,7 +175,7 @@ NotificationModuleStatus NMUpdateDynamicNotificationBackgroundColor(Notification
 NotificationModuleStatus NMUpdateDynamicNotificationTextColor(NotificationModuleHandle handle,
                                                               NMColor textColor) {
     NotificationModuleStatus res = NOTIFICATION_MODULE_RESULT_INVALID_HANDLE;
-    std::lock_guard<std::mutex> lock(gNotificationListMutex);
+    std::lock_guard<std::recursive_mutex> lock(gNotificationListMutex);
     for (auto &cur : gNotificationList) {
         if (cur->getHandle() == handle) {
             cur->updateTextColor((GX2Color){textColor.r, textColor.g, textColor.b, textColor.a});
@@ -203,7 +203,7 @@ NotificationModuleStatus NMFinishDynamicNotification(NotificationModuleHandle ha
     }
 
     NotificationModuleStatus res = NOTIFICATION_MODULE_RESULT_INVALID_HANDLE;
-    std::lock_guard<std::mutex> lock(gNotificationListMutex);
+    std::lock_guard<std::recursive_mutex> lock(gNotificationListMutex);
     for (auto &cur : gNotificationList) {
         if (cur->getHandle() == handle) {
             cur->updateStatus(newStatus);
