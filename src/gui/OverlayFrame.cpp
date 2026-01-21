@@ -6,7 +6,7 @@ void OverlayFrame::addNotification(std::shared_ptr<Notification> status) {
     status->setAlignment(ALIGN_TOP_LEFT);
     status->setEffect(EFFECT_FADE, 55, 255);
     {
-        std::lock_guard<std::mutex> lock(gNotificationListMutex);
+        std::lock_guard<std::recursive_mutex> lock(gNotificationListMutex);
         list.push_front(std::move(status));
     }
 }
@@ -28,7 +28,7 @@ void OverlayFrame::OnShakeFinished(GuiElement *element) {
 }
 
 void OverlayFrame::clearElements() {
-    std::lock_guard<std::mutex> lock(gNotificationListMutex);
+    std::lock_guard<std::recursive_mutex> lock(gNotificationListMutex);
     for (auto &element : list) {
         remove(element.get());
     }
@@ -38,7 +38,7 @@ void OverlayFrame::clearElements() {
 void OverlayFrame::process() {
     GuiFrame::process();
 
-    std::lock_guard<std::mutex> lock(gNotificationListMutex);
+    std::lock_guard<std::recursive_mutex> lock(gNotificationListMutex);
 
     float offset = -25.0f;
     for (auto &item : list) {

@@ -66,7 +66,7 @@ GuiText::GuiText(const char *t, int s, const glm::vec4 &c) {
     blurGlowColor     = glm::vec4(0.0f);
 
     if (t) {
-        std::lock_guard<std::mutex> textLock(mTextLock);
+        std::lock_guard<std::recursive_mutex> textLock(mTextLock);
         text = SchriftGX2::charToWideChar(t);
         if (!text) {
             return;
@@ -81,14 +81,14 @@ GuiText::GuiText(const char *t, int s, const glm::vec4 &c) {
 * Destructor for the GuiText class.
 */
 GuiText::~GuiText() {
-    std::lock_guard<std::mutex> textLock(mTextLock);
+    std::lock_guard<std::recursive_mutex> textLock(mTextLock);
     delete[] text;
 
     text = nullptr;
 }
 
 void GuiText::setText(const char *t) {
-    std::lock_guard<std::mutex> textLock(mTextLock);
+    std::lock_guard<std::recursive_mutex> textLock(mTextLock);
     delete[] text;
 
     text = nullptr;
@@ -115,7 +115,7 @@ void GuiText::setPresetFont(SchriftGX2 *f) {
 }
 
 void GuiText::setFontSize(int s) {
-    std::lock_guard<std::mutex> textLock(mTextLock);
+    std::lock_guard<std::recursive_mutex> textLock(mTextLock);
     size = s;
 }
 
@@ -139,7 +139,7 @@ void GuiText::setBlurGlowColor(float blur, const glm::vec4 &c) {
 * Change font
 */
 bool GuiText::setFont(SchriftGX2 *f) {
-    std::lock_guard<std::mutex> textLock(mTextLock);
+    std::lock_guard<std::recursive_mutex> textLock(mTextLock);
     if (!f) {
         return false;
     }
@@ -161,7 +161,7 @@ void GuiText::draw(bool SRGBConversion) {
     if (!isVisible()) {
         return;
     }
-    std::lock_guard<std::mutex> textLock(mTextLock);
+    std::lock_guard<std::recursive_mutex> textLock(mTextLock);
 
     color[3]         = getAlpha();
     blurGlowColor[3] = blurAlpha * getAlpha();
