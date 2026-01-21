@@ -30,7 +30,7 @@ INCLUDES	:=	src
 #-------------------------------------------------------------------------------
 # options for code generation
 #-------------------------------------------------------------------------------
-CFLAGS	:=	-Wall -Wextra -O2 -ffunction-sections\
+CFLAGS	:=	-Wall -Wextra -Werror -O2 -ffunction-sections\
 			$(MACHDEP)
 
 CFLAGS	+=	$(INCLUDE) -D__WIIU__ -D__WUT__
