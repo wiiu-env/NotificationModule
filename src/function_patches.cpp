@@ -26,7 +26,7 @@ DECL_FUNCTION(void, GX2SetContextState, GX2ContextState *curContext) {
 DECL_FUNCTION(void, GX2SetupContextStateEx, GX2ContextState *state, BOOL unk1) {
     real_GX2SetupContextStateEx(state, unk1);
     gOriginalContextState = state;
-    DEBUG_FUNCTION_LINE_VERBOSE("gOriginalContextState = %08X", state);
+    DEBUG_FUNCTION_LINE_VERBOSE("gOriginalContextState = %p", state);
 }
 
 DECL_FUNCTION(void, GX2SetTVBuffer, void *buffer, uint32_t buffer_size, int32_t tv_render_mode, GX2SurfaceFormat surface_format, GX2BufferingMode buffering_mode) {
