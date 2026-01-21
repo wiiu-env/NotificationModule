@@ -156,7 +156,7 @@ char *SchriftGX2::wideCharToUTF8(const wchar_t *strChar) {
 * This routine clears all members of the font map structure and frees all allocated memory back to the system.
 */
 void SchriftGX2::unloadFont() {
-    std::lock_guard<std::mutex> lock(fontDataMutex);
+    std::lock_guard<std::recursive_mutex> lock(fontDataMutex);
     for (auto &dataForSize : fontData) {
         for (auto &cur : dataForSize.second.ftgxCharMap) {
             if (cur.second.texture) {
@@ -182,7 +182,7 @@ void SchriftGX2::unloadFont() {
 * @return A pointer to the allocated font structure.
 */
 ftgxCharData *SchriftGX2::cacheGlyphData(wchar_t charCode, int16_t pixelSize) {
-    std::lock_guard<std::mutex> lock(fontDataMutex);
+    std::lock_guard<std::recursive_mutex> lock(fontDataMutex);
     auto itr = fontData.find(pixelSize);
     if (itr != fontData.end()) {
         auto itr2 = itr->second.ftgxCharMap.find(charCode);
@@ -347,7 +347,7 @@ int16_t SchriftGX2::getStyleOffsetWidth(uint16_t width, uint16_t format) {
 * @param format	Positional format of the string.
 */
 int16_t SchriftGX2::getStyleOffsetHeight(int16_t format, uint16_t pixelSize) {
-    std::lock_guard<std::mutex> lock(fontDataMutex);
+    std::lock_guard<std::recursive_mutex> lock(fontDataMutex);
     std::map<int16_t, ftGX2Data>::iterator itr = fontData.find(pixelSize);
     if (itr == fontData.end()) return 0;
 
@@ -397,7 +397,7 @@ uint16_t SchriftGX2::drawText(int16_t x, int16_t y, int16_t z, const wchar_t *te
         return 0;
     }
 
-    std::lock_guard<std::mutex> lock(fontDataMutex);
+    std::lock_guard<std::recursive_mutex> lock(fontDataMutex);
 
     // uint16_t fullTextWidth = (textWidth > 0) ? textWidth : getWidth(text, pixelSize);
     uint16_t x_pos = x, printed = 0;
@@ -445,7 +445,7 @@ uint16_t SchriftGX2::getWidth(const wchar_t *text, int16_t pixelSize) {
     if (!text) {
         return 0;
     }
-    std::lock_guard<std::mutex> lock(fontDataMutex);
+    std::lock_guard<std::recursive_mutex> lock(fontDataMutex);
 
     uint16_t strWidth = 0;
     int32_t i         = 0;
@@ -470,7 +470,7 @@ uint16_t SchriftGX2::getWidth(const wchar_t *text, int16_t pixelSize) {
 * Single char width
 */
 uint16_t SchriftGX2::getCharWidth(const wchar_t wChar, int16_t pixelSize, const wchar_t prevChar) {
-    std::lock_guard<std::mutex> lock(fontDataMutex);
+    std::lock_guard<std::recursive_mutex> lock(fontDataMutex);
     uint16_t strWidth       = 0;
     ftgxCharData *glyphData = cacheGlyphData(wChar, pixelSize);
 
@@ -496,7 +496,7 @@ uint16_t SchriftGX2::getCharWidth(const wchar_t wChar, int16_t pixelSize, const 
 * @return The height of the text string in pixels.
 */
 uint16_t SchriftGX2::getHeight(const wchar_t *text, int16_t pixelSize) {
-    std::lock_guard<std::mutex> lock(fontDataMutex);
+    std::lock_guard<std::recursive_mutex> lock(fontDataMutex);
     getOffset(text, pixelSize);
     return fontData[pixelSize].ftgxAlign.max - fontData[pixelSize].ftgxAlign.min;
 }
@@ -515,7 +515,7 @@ void SchriftGX2::getOffset(const wchar_t *text, int16_t pixelSize, uint16_t widt
     if (!text) {
         return;
     }
-    std::lock_guard<std::mutex> lock(fontDataMutex);
+    std::lock_guard<std::recursive_mutex> lock(fontDataMutex);
     int16_t strMax = 0, strMin = 9999;
     uint16_t currWidth = 0;
 
